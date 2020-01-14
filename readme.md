@@ -6,6 +6,10 @@ files. Define the project `root` and `depth` in .env file and run the script as 
 Changelog
 ------
 
+#### Version 1.1
+
+ - Added option to enable or disable generated file compression.
+
 #### Version 1.0
 
  - Initial release
@@ -56,17 +60,19 @@ keys.
    In the above case, you have to put depth value 2. If there is only one
    level of application directory, you can put 1.
 
+ - **COMPRESS_OUTPUT**: Self explanatory. By default compression is enabled. If you want to disable 
+ compression and prefer raw SQL output, set the value to anything other than 1.
 
 Output
 ------
 The script will read the database credentials from each of your projects `.env` file and will use it
-to generate SQL files along with all of your schemas and data for each of your projects. You will get
-the generated SQL file inside each of your projects `storage/app/backup` directory. _Note that, these
-files will not be replaced in the next run, instead a new backup will be generated and stored_. The
-default file naming format is:
+to generate compressed SQL files along with all of your schemas and data for each of your projects.
+You will get the generated SQL file inside each of your projects `storage/app/backup` directory. 
+_Note that, these files will not be replaced in the next run, instead a new backup will be 
+generated and stored_. The default file naming format is:
 
 ```
-<dbname>_2020-01-14_13_45_06.sql
+<dbname>_2020-01-14_13_45_06.[gz|sql|
 ```
 
 You can use these SQL files to restore data anytime.

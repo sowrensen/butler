@@ -16,7 +16,7 @@ from dotenv import dotenv_values
 import sys
 
 
-def backup_database(project_root, project_depth):
+def backup_database(project_root, project_depth, compress_output):
     """
     Run mysqldump and backup database as SQL file.
     """
@@ -59,13 +59,16 @@ def backup_database(project_root, project_depth):
             if not os.path.exists(backup_directory):
                 os.mkdir(backup_directory)
             # Filename consists of the database name and current timestamp as human readable format
-            filename = dbname + '_' + now + '.sql'
+            filename = dbname + '_' + now + ('.gz' if compress_output else '.sql')
             # The backup file path
             filepath = backup_directory.joinpath(filename)
             # The command to run, note that the command is a native mysql command that will run in
             # shell, it has nothing to do with Python, hence we cannot catch an error here.
             print('\nRunning mysqldump on %s...' % dbname)
-            cmd = "mysqldump -u{} -p{} {} > {}".format(user, password, dbname, filepath)
+            if compress_output:
+                cmd = "mysqldump -u{} -p{} {} | gzip > {}".format(user, password, dbname, filepath)
+            else:
+                cmd = "mysqldump -u{} -p{} {} > {}".format(user, password, dbname, filepath)
             os.system(cmd)
             count += 1
             print('Success!')
@@ -82,9 +85,10 @@ def run():
     """
     try:
         valid_depths = (1, 2)
-        print('Reading environment variables from .env file...\n')
+        print('Reading environment variables from .env file...')
         project_root = os.environ['PROJECT_ROOT']
         project_depth = os.environ['PROJECT_DEPTH']
+        compress_output = True if int(os.environ['COMPRESS_OUTPUT']) == 1 else False
         
         if not project_root:
             raise ValueError("Error! Project root is not defined. You must set a project root in .env file.")
@@ -93,7 +97,12 @@ def run():
             raise ValueError(
                 "Error! Invalid value defined for depth, value must be between 1 and 2.")
         
-        backup_database(project_root, project_depth)
+        print("""
+        Project Root:           %s
+        Project Depth:          %s
+        Compression Enabled:    %s
+        """ % (project_root, project_depth, compress_output))
+        backup_database(project_root, project_depth, compress_output)
         return
     except ValueError as error:
         print(error)
