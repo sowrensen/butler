@@ -16,8 +16,9 @@ Usage
 ### Setup
 
 Run following commands in your terminal to copy this repository and for primary setup. I assume 
-that **mysql** or **mariadb** is installed in your machine, cause the script uses `mysqldump` 
-under the hood to take the backup. You will need `Pipenv` to use this script however.
+that **mysql** or **mariadb** is installed on your machine, cause the script uses `mysqldump` 
+under the hood to take the backup. You will need [Pipenv](https://github.com/pypa/pipenv) 
+to use this script however.
 
 ```shell
 git clone https://github.com/sowrensen/butler.git
@@ -28,7 +29,7 @@ cp .env.example .env
 
 ### Enviroment Variables
 
-Before you can run the script, you've to declare two environment variables 
+Before you can run the script, you have to declare two environment variables 
 in `.env` file. An example file has been added for your consistency. Just copy
 the `.env.example` file as `.env` and define the values for the following two 
 keys.
@@ -59,7 +60,7 @@ keys.
 Output
 ------
 The script will read the database credentials from each of your projects `.env` file and will use it
-to generat SQL files along with all of your schemas and data for each of your projects. You will get
+to generate SQL files along with all of your schemas and data for each of your projects. You will get
 the generated SQL file inside each of your projects `storage/app/backup` directory. _Note that, these
 files will not be replaced in the next run, instead a new backup will be generated and stored_. The
 default file naming format is:
@@ -80,7 +81,7 @@ cron, better you create a bash script like this.
 #!/bin/sh
 
 PYTHON="/path/to/pipenv/python"
-BUTLER="/path/to/BUTLER"
+BUTLER="/path/to/butler"
 PIPENV="/path/to/pipenv"
 SCRIPT="butler.py"
 
