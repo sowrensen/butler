@@ -49,8 +49,8 @@ def backup_database(project_root, project_depth):
             env = dotenv_values(dotenv_path=env_file)
             
             # Get necessary keys from .env file
-            dbname = env['DB_NAME']
-            user = env['DB_USER']
+            dbname = env['DB_DATABASE']
+            user = env['DB_USERNAME']
             password = env['DB_PASSWORD']
             now = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
             
