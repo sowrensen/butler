@@ -72,7 +72,7 @@ _Note that, these files will not be replaced in the next run, instead a new back
 generated and stored_. The default file naming format is:
 
 ```
-<dbname>_2020-01-14_13_45_06.[gz|sql|
+<dbname>_2020-01-14_13_45_06.[gz|sql]
 ```
 
 You can use these SQL files to restore data anytime.

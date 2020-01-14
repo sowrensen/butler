@@ -107,7 +107,7 @@ def run():
     except ValueError as error:
         print(error)
     except KeyError as error:
-        print('Error! Please define necessary keys in .env file.')
+        print('\nError! Please define necessary keys in .env file.')
 
 
 if __name__ == "__main__":
