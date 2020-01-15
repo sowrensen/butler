@@ -10,13 +10,30 @@
 """
 
 import os
+import sys
 from pathlib import Path
 from datetime import datetime
 from dotenv import dotenv_values
-import sys
+from remover import remove_older
 
 
-def backup_database(project_root, project_depth, compress_output):
+def is_compression_enabled():
+    """Check if compression is enabled. Default is True."""
+    try:
+        return True if int(os.environ['COMPRESS_OUTPUT']) == 1 else False
+    except KeyError as error:
+        return True
+
+
+def remove_older_files():
+    """Check if removing older files is enabled. Default is 0 which depicts false."""
+    try:
+        return 0 if int(os.environ['REMOVE_OLDER_FILES']) == 0 else int(os.environ['REMOVE_OLDER_FILES'])
+    except KeyError as error:
+        return 0
+
+
+def backup_database(project_root, project_depth):
     """
     Run mysqldump and backup database as SQL file.
     """
@@ -28,6 +45,9 @@ def backup_database(project_root, project_depth, compress_output):
     except IOError as error:
         print(str(error))
         sys.exit(0)
+    
+    # Get output compression setting
+    compress_output = is_compression_enabled()
     
     # The glob for searching
     TARGET_LARAVEL_DIRECTORY = '*' * int(project_depth) + '/*storage/app'
@@ -64,7 +84,8 @@ def backup_database(project_root, project_depth, compress_output):
             filepath = backup_directory.joinpath(filename)
             # The command to run, note that the command is a native mysql command that will run in
             # shell, it has nothing to do with Python, hence we cannot catch an error here.
-            print('\nRunning mysqldump on %s...' % dbname)
+            print('\n------------------ [%s] ------------------' % dbname)
+            print('Running mysqldump on %s...' % dbname)
             if compress_output:
                 cmd = "mysqldump -u{} -p{} {} | gzip > {}".format(user, password, dbname, filepath)
             else:
@@ -72,6 +93,11 @@ def backup_database(project_root, project_depth, compress_output):
             os.system(cmd)
             count += 1
             print('Success!')
+            if remove_older_files() > 0 and backup_directory.exists():
+                days = remove_older_files()
+                print('\nRemoving files older than %d days from %s...' % (remove_older_files(), dbname))
+                remove_older(str(backup_directory), days, dbname)
+            print('---------------- //[%s]// ----------------' % dbname)
         except Exception as error:
             print('Error occurred: ' + str(error))
     
@@ -88,7 +114,6 @@ def run():
         print('Reading environment variables from .env file...')
         project_root = os.environ['PROJECT_ROOT']
         project_depth = os.environ['PROJECT_DEPTH']
-        compress_output = True if int(os.environ['COMPRESS_OUTPUT']) == 1 else False
         
         if not project_root:
             raise ValueError("Error! Project root is not defined. You must set a project root in .env file.")
@@ -100,9 +125,8 @@ def run():
         print("""
         Project Root:           %s
         Project Depth:          %s
-        Compression Enabled:    %s
-        """ % (project_root, project_depth, compress_output))
-        backup_database(project_root, project_depth, compress_output)
+        """ % (project_root, project_depth))
+        backup_database(project_root, project_depth)
         return
     except ValueError as error:
         print(error)

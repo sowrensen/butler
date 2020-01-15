@@ -6,6 +6,12 @@ files. Define the project `root` and `depth` in .env file and run the script as 
 Changelog
 ------
 
+#### Version 1.2
+
+ - Added option to remove older backups.
+ - Now optional keys need not have to be specified in `.env` file.  
+ - Improved visual feedback.
+
 #### Version 1.1
 
  - Added option to enable or disable generated file compression.
@@ -33,17 +39,17 @@ cp .env.example .env
 
 ### Enviroment Variables
 
-Before you can run the script, you have to declare two environment variables 
-in `.env` file. An example file has been added for your consistency. Just copy
-the `.env.example` file as `.env` and define the values for the following two 
-keys.
+Before you can run the script, you have to declare some environment variables in a 
+`.env` file. An example `.env` file has been added for your consistency. Just copy
+the `.env.example` file as `.env` and define the values for the following keys.
 
- - **PROJECT_ROOT**: This will be the directory where all of your Laravel projects 
+
+ - **PROJECT_ROOT** (required): This will be the directory where all of your Laravel projects 
  reside, e.g. `/home/<user>/projects`, or `/var/www`, or `/usr/share/nginx`. 
  Note that, if you keep your projects into some place which is in `root` directory, 
  you have to run the script as root. You know how Linux works, right?
  
- - **PROJECT_DEPTH**: This value defines the searching depths for directories.
+ - **PROJECT_DEPTH** (required): This value defines the searching depths for directories.
  The value should be either 1 or 2. If you have subdirectories in your root 
  directory, you have to put 2, else put 1. For example, suppose this is the file
  structure inside your `PROJECT_ROOT`:
@@ -60,8 +66,12 @@ keys.
    In the above case, you have to put depth value 2. If there is only one
    level of application directory, you can put 1.
 
- - **COMPRESS_OUTPUT**: Self explanatory. By default compression is enabled. If you want to disable 
- compression and prefer raw SQL output, set the value to anything other than 1.
+ - **COMPRESS_OUTPUT** (optional, default=1): Self explanatory. By default compression is enabled. 
+ If you want to disable compression and prefer raw SQL output, set the value to anything other than 1.
+ 
+ - **REMOVE_OLDER_FILES** (optional, default=0): This key takes number of days as input. By default it 
+ is disabled. If you specify any other number, the script will remove files generated before specified 
+ number of days. So if you specify 10, it will delete all backups generated before 10 days from next run.
 
 Output
 ------
