@@ -6,7 +6,7 @@
 | This script takes the database backups of multiple Laravel
 | apps as SQL files. Define the project root and depth in
 | .env file and run the script as a cron job.
-| 
+|
 """
 
 import os
@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from dotenv import dotenv_values
-from remover import remove_older
+from remover import remove_older, run_telescope_pruner
 
 
 def is_compression_enabled():
@@ -26,11 +26,25 @@ def is_compression_enabled():
 
 
 def remove_older_files():
-    """Check if removing older files is enabled. Default is 0 which depicts false."""
+    """
+    Check if removing older files is enabled. Default is 0 which depicts false.
+    :return int The number of days
+    """
     try:
-        return 0 if int(os.environ['REMOVE_OLDER_FILES']) == 0 else int(os.environ['REMOVE_OLDER_FILES'])
+        return int(os.environ['REMOVE_OLDER_FILES'])
     except KeyError as error:
         return 0
+
+
+def prune_telescope_data():
+    """
+    Check if telescope data pruning is enabled. Default is -1 which depicts false.
+    :return int The number of hours
+    """
+    try:
+        return int(os.environ['PRUNE_TELESCOPE_DATA'])
+    except KeyError as error:
+        return -1
 
 
 def backup_database(project_root, project_depth):
@@ -76,8 +90,7 @@ def backup_database(project_root, project_depth):
             
             # We will be keeping the backups into a directory named backup inside the app directory
             backup_directory = public_directory.joinpath('backup')
-            if not os.path.exists(backup_directory):
-                os.mkdir(backup_directory)
+            os.makedirs(backup_directory, exist_ok=True)
             # Filename consists of the database name and current timestamp as human readable format
             filename = dbname + '_' + now + ('.gz' if compress_output else '.sql')
             # The backup file path
@@ -85,6 +98,11 @@ def backup_database(project_root, project_depth):
             # The command to run, note that the command is a native mysql command that will run in
             # shell, it has nothing to do with Python, hence we cannot catch an error here.
             print('\n------------------ [%s] ------------------' % dbname)
+            # Run telescope data pruner if enabled
+            if prune_telescope_data() > -1:
+                print("Running telescope:prune...")
+                run_telescope_pruner(public_directory.parent.parent, prune_telescope_data())
+            
             print('Running mysqldump on %s...' % dbname)
             if compress_output:
                 cmd = "mysqldump -u{} -p{} {} | gzip > {}".format(user, password, dbname, filepath)

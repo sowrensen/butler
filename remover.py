@@ -32,3 +32,22 @@ def remove_older(path, days, prefix=None):
             send2trash(file)
     else:
         print('No files older than %d days has been found!' % days)
+
+
+def run_telescope_pruner(path, hours):
+    """
+    Run telescope:prune command for requested path.
+    
+    For now, the php path is hardcoded, in future it will be
+    made dynamic to automatically locate binary executable.
+    
+    Also, in case of projects where telescope is not installed,
+    it will just output an error, but the execution of the
+    script will not be hampered. This may seem a drawback
+    for now, however, in future I wish to do that in a
+    better way.
+    """
+    php = "/usr/bin/php"
+    os.system(
+        "{} {} telescope:prune --hours={}".format(php, str(path.joinpath('artisan')),
+                                                  hours))

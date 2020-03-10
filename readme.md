@@ -6,6 +6,12 @@ files. Define the project `root` and `depth` in .env file and run the script as 
 Changelog
 ------
 
+#### Version 1.3
+ 
+ - Added `laravel-telescope` data pruning support.
+ - Improved code structure.
+ - Fixed documentation.
+
 #### Version 1.2
 
  - Added option to remove older backups.
@@ -72,6 +78,13 @@ the `.env.example` file as `.env` and define the values for the following keys.
  - **REMOVE_OLDER_FILES** (optional, default=0): This key takes number of days as input. By default it 
  is disabled. If you specify any other number, the script will remove files generated before specified 
  number of days. So if you specify 10, it will delete all backups generated before 10 days from next run.
+ 
+ - **PRUNE_TELESCOPE_DATA** (optional, default=-1): If you're using Laravel Telescope in
+ your project, this option might come handy. Specify any number (starting from 0) as value
+ of this key and butler will run `php artisan telescope:prue --hours=number` for your project.
+ By default it is disabled. _Note that, if telescope is not installed in some of your project
+ it will show an error - `There are no commands defined in the "telescope" namespace.` - which
+ has no impact on the execution of the main program._
 
 Output
 ------
@@ -114,11 +127,11 @@ Now run the bash script as cron job. This following cron job will run on every *
 and write the log into the defined log file.
 
 ```
-30 3 2 * * /path/to/bash/butler.sh > /path/to/butler_output.log
+30 3 */2 * * /path/to/bash/butler.sh > /path/to/butler_output.log
 ```
 
 If you do not want a log file:
 
 ```
-30 3 2 * * /path/to/bash/butler.sh >/dev/null 2>&1
+30 3 */2 * * /path/to/bash/butler.sh >/dev/null 2>&1
 ```
