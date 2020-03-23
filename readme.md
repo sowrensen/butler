@@ -6,6 +6,12 @@ files. Define the project `root` and `depth` in .env file and run the script as 
 Changelog
 ------
 
+#### Version 1.4
+ 
+ - Improved process management.
+ - Now `telescope:prune` command will only run when it is applicable, i.e. `telescope` is installed.
+ - Code refactoring.
+
 #### Version 1.3
  
  - Added `laravel-telescope` data pruning support.

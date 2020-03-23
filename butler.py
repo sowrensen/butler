@@ -10,6 +10,7 @@
 """
 
 import os
+import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -86,35 +87,25 @@ def backup_database(project_root, project_depth):
             dbname = env['DB_DATABASE']
             user = env['DB_USERNAME']
             password = env['DB_PASSWORD']
-            now = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
             
             # We will be keeping the backups into a directory named backup inside the app directory
             backup_directory = public_directory.joinpath('backup')
             os.makedirs(backup_directory, exist_ok=True)
-            # Filename consists of the database name and current timestamp as human readable format
-            filename = dbname + '_' + now + ('.gz' if compress_output else '.sql')
-            # The backup file path
-            filepath = backup_directory.joinpath(filename)
-            # The command to run, note that the command is a native mysql command that will run in
-            # shell, it has nothing to do with Python, hence we cannot catch an error here.
+            
             print('\n------------------ [%s] ------------------' % dbname)
             # Run telescope data pruner if enabled
             if prune_telescope_data() > -1:
-                print("Running telescope:prune...")
                 run_telescope_pruner(public_directory.parent.parent, prune_telescope_data())
             
-            print('Running mysqldump on %s...' % dbname)
-            if compress_output:
-                cmd = "mysqldump -u{} -p{} {} | gzip > {}".format(user, password, dbname, filepath)
-            else:
-                cmd = "mysqldump -u{} -p{} {} > {}".format(user, password, dbname, filepath)
-            os.system(cmd)
+            # Run actual mysqldump process
+            run(user, password, dbname, backup_directory)
             count += 1
             print('Success!')
+            
+            # Remove older backups if feature is enabled
             if remove_older_files() > 0 and backup_directory.exists():
-                days = remove_older_files()
-                print('\nRemoving files older than %d days from %s...' % (remove_older_files(), dbname))
-                remove_older(str(backup_directory), days, dbname)
+                remove_older(str(backup_directory), remove_older_files(), dbname)
+            
             print('---------------- //[%s]// ----------------' % dbname)
         except Exception as error:
             print('Error occurred: ' + str(error))
@@ -123,7 +114,40 @@ def backup_database(project_root, project_depth):
     print('\nExecution finished at: ' + str(datetime.now()))
 
 
-def run():
+def generate_file_name(dbname, backup_directory):
+    """
+    Generate file name
+    :param dbname: The database name
+    :param backup_directory: Location of backup directory
+    :return: str
+    """
+    now = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
+    # Filename consists of the database name and current timestamp as human readable format
+    filename = dbname + '_' + now + ('.gz' if is_compression_enabled() else '.sql')
+    return backup_directory.joinpath(filename)
+
+
+def run(user, password, dbname, backup_directory):
+    """
+    Run mysqldump process
+    :param user: Database username
+    :param password: Database password
+    :param dbname: Database name
+    :param backup_directory: Location of backup directory
+    """
+    compress_output = is_compression_enabled()
+    print("Running mysqldump on {}...".format(dbname))
+    args = ['mysqldump', '-u{}'.format(user), '-p{}'.format(password), dbname]
+    with open(generate_file_name(dbname, backup_directory), 'wb') as backup:
+        process1 = subprocess.Popen(args, stdout=subprocess.PIPE if compress_output else backup)
+        if compress_output:
+            # If compression is enabled, open a second process and compress the output
+            process2 = subprocess.Popen('gzip', stdin=process1.stdout, stdout=backup)
+            process1.stdout.close()
+    backup.close()
+
+
+def start():
     """
     Initializes environment variables and runs main program.
     """
@@ -153,4 +177,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    start()
