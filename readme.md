@@ -89,8 +89,7 @@ the `.env.example` file as `.env` and define the values for the following keys.
  your project, this option might come handy. Specify any number (starting from 0) as value
  of this key and butler will run `php artisan telescope:prue --hours=number` for your project.
  By default it is disabled. _Note that, if telescope is not installed in some of your project
- it will show an error - `There are no commands defined in the "telescope" namespace.` - which
- has no impact on the execution of the main program._
+ it will not run for those projects._
 
 Output
 ------
