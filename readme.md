@@ -6,6 +6,10 @@ files. Define the project `root` and `depth` in .env file and run the script as 
 Changelog
 ------
 
+#### Version 1.5
+- Application now solely uses `dotenv` library to read `.env` file.
+- Added `requirements.txt` for using without Pipenv.
+
 #### Version 1.4
  
  - Improved process management.
